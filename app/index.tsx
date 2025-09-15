@@ -6,8 +6,9 @@ import { Accelerometer, Gyroscope, Magnetometer } from "expo-sensors";
 import Header from "../components/Header";
 import ActionButtons from "../components/ActionButtons";
 import MetricsPanel from "../components/MetricsPanel";
-import TrajectoryView from "../components/TrajectoryView";  // ✅ use it
+import TrajectoryView from "../components/TrajectoryView";
 
+// ✅ use it
 const { width, height } = Dimensions.get("window");
 
 // Fixed stride length (in meters)
@@ -32,10 +33,8 @@ export default function Index() {
   // Metrics
   const [distance, setDistance] = useState(0);
   const [drift, setDrift] = useState(0);
-  const [speed, setSpeed] = useState(0);
 
   const startTimeRef = useRef<number | null>(null);
-  const lastStepTimeRef = useRef<number | null>(null);
 
   // Start sensors
   const handleStart = () => {
@@ -50,11 +49,9 @@ export default function Index() {
     Magnetometer.addListener(setMag);
 
     startTimeRef.current = Date.now();
-    lastStepTimeRef.current = null;
 
     setDistance(0);
     setDrift(0);
-    setSpeed(0);
   };
 
   // Stop sensors + Reset everything
@@ -77,7 +74,6 @@ export default function Index() {
 
     setDistance(0);
     setDrift(0);
-    setSpeed(0);
   };
 
   // Step detection
@@ -106,14 +102,6 @@ export default function Index() {
       const dxDrift = pos.x - start.x;
       const dyDrift = pos.y - start.y;
       setDrift(Math.sqrt(dxDrift * dxDrift + dyDrift * dyDrift) / 20); // convert back to meters
-
-      // Speed: step length / time since last step
-      const now = Date.now();
-      if (lastStepTimeRef.current) {
-        const dt = (now - lastStepTimeRef.current) / 1000; // seconds
-        if (dt > 0) setSpeed(STRIDE_LENGTH / dt);
-      }
-      lastStepTimeRef.current = now;
     }
 
     setLastAccelZ(accel.z);
@@ -131,17 +119,12 @@ export default function Index() {
       <Header title="Trajecto" />
 
       {/* ✅ Use dynamic TrajectoryView instead of static Svg */}
-     <TrajectoryView path={path} />
+      <TrajectoryView path={path} />
 
       {/* Metrics */}
-      <MetricsPanel
-        steps={stepCount}
-        distance={distance}
-        drift={drift}
-        speed={speed}
-      />
+        <MetricsPanel steps={stepCount} distance={distance} drift={drift} />
 
-      {/* Start/Stop */}
+        {/* Start/Stop */}
       <ActionButtons running={running} onStart={handleStart} onStop={handleStop} />
     </SafeAreaView>
   );
